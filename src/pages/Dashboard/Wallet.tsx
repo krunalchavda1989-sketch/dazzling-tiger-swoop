@@ -11,7 +11,10 @@ import {
   History,
   Plus,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  Building2,
+  User,
+  Hash
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,6 +36,7 @@ const WalletView = () => {
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isEditingBank, setIsEditingBank] = useState(false);
 
   const transactions = [
     { id: 1, type: 'Commission', amount: '+₹280.00', date: '2024-03-15', status: 'Completed', description: 'Level 1 Referral Commission' },
@@ -48,7 +52,6 @@ const WalletView = () => {
     }
 
     setIsWithdrawing(true);
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
     setIsWithdrawing(false);
     setIsSuccess(true);
@@ -127,7 +130,6 @@ const WalletView = () => {
         </div>
       </div>
 
-      {/* Wallet Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <Card className="lg:col-span-2 border-none shadow-xl rounded-[2.5rem] bg-indigo-600 text-white overflow-hidden relative">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
@@ -158,27 +160,67 @@ const WalletView = () => {
         </Card>
 
         <Card className="border-none shadow-sm rounded-[2.5rem] bg-white">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold">Quick Actions</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-lg font-bold">Bank Details</CardTitle>
+            <Button variant="ghost" size="sm" className="text-indigo-600" onClick={() => setIsEditingBank(!isEditingBank)}>
+              {isEditingBank ? "Cancel" : "Edit"}
+            </Button>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <Button variant="outline" className="w-full h-14 rounded-2xl border-gray-100 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-100 justify-start px-6 group">
-              <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center mr-4 group-hover:bg-white transition-colors">
-                <CreditCard className="w-5 h-5" />
+          <CardContent className="space-y-6">
+            {isEditingBank ? (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">Account Holder</Label>
+                  <Input placeholder="Full Name" className="h-10 rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Bank Name</Label>
+                  <Input placeholder="e.g. HDFC Bank" className="h-10 rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Account Number</Label>
+                  <Input placeholder="0000 0000 0000" className="h-10 rounded-xl" />
+                </div>
+                <Button className="w-full bg-indigo-600 rounded-xl h-10" onClick={() => {
+                  setIsEditingBank(false);
+                  showSuccess("Bank details updated!");
+                }}>Save Details</Button>
               </div>
-              <span className="font-bold">Bank Details</span>
-            </Button>
-            <Button variant="outline" className="w-full h-14 rounded-2xl border-gray-100 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-100 justify-start px-6 group">
-              <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center mr-4 group-hover:bg-white transition-colors">
-                <History className="w-5 h-5" />
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400">
+                    <User size={18} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400 uppercase font-bold">Account Holder</p>
+                    <p className="text-sm font-bold text-gray-900">Alex Johnson</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400">
+                    <Building2 size={18} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400 uppercase font-bold">Bank Name</p>
+                    <p className="text-sm font-bold text-gray-900">HDFC Bank</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400">
+                    <Hash size={18} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400 uppercase font-bold">Account Number</p>
+                    <p className="text-sm font-bold text-gray-900">**** **** 4290</p>
+                  </div>
+                </div>
               </div>
-              <span className="font-bold">Income Reports</span>
-            </Button>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Transaction History */}
       <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden">
         <CardHeader className="border-b border-gray-50 p-6">
           <div className="flex items-center justify-between">

@@ -12,7 +12,8 @@ import {
   Award,
   Copy,
   Share2,
-  Network
+  Network,
+  BarChart3
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,16 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { showSuccess } from '@/utils/toast';
 import GenealogyTree from '@/components/team/GenealogyTree';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  Cell
+} from 'recharts';
 
 const TeamView = () => {
   const referralLink = `${window.location.origin}/register?ref=USER_ID_123`;
@@ -29,6 +40,18 @@ const TeamView = () => {
     navigator.clipboard.writeText(referralLink);
     showSuccess("Referral link copied to clipboard!");
   };
+
+  const levelData = [
+    { level: 'L1', count: 24, color: '#6366f1' },
+    { level: 'L2', count: 48, color: '#818cf8' },
+    { level: 'L3', count: 32, color: '#a5b4fc' },
+    { level: 'L4', count: 18, color: '#c7d2fe' },
+    { level: 'L5', count: 12, color: '#e0e7ff' },
+    { level: 'L6', count: 8, color: '#f5f3ff' },
+    { level: 'L7', count: 5, color: '#f5f3ff' },
+    { level: 'L8', count: 3, color: '#f5f3ff' },
+    { level: 'L9', count: 1, color: '#f5f3ff' },
+  ];
 
   const teamMembers = [
     { id: 1, name: "John Doe", level: 1, joinDate: "2024-01-15", status: "Active", earnings: "₹4,500", referrals: 12, rank: "Gold" },
@@ -49,62 +72,90 @@ const TeamView = () => {
         </Button>
       </div>
 
-      {/* Referral Link Card */}
-      <Card className="border-none shadow-sm rounded-3xl bg-indigo-600 text-white overflow-hidden">
-        <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex-1">
-            <h3 className="text-xl font-bold mb-2">Grow Your Empire</h3>
-            <p className="text-indigo-100 text-sm">Share your unique referral link with friends and earn commissions up to 9 levels deep.</p>
-          </div>
-          <div className="flex items-center gap-2 bg-white/10 p-2 rounded-2xl w-full md:w-auto">
-            <code className="px-4 py-2 text-sm font-mono truncate max-w-[200px] md:max-w-xs">
-              {referralLink}
-            </code>
-            <Button onClick={copyToClipboard} size="icon" variant="ghost" className="text-white hover:bg-white/20 rounded-xl">
-              <Copy size={18} />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <Card className="border-none shadow-sm rounded-3xl bg-indigo-600 text-white overflow-hidden">
+            <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex-1">
+                <h3 className="text-xl font-bold mb-2">Grow Your Empire</h3>
+                <p className="text-indigo-100 text-sm">Share your unique referral link with friends and earn commissions up to 9 levels deep.</p>
+              </div>
+              <div className="flex items-center gap-2 bg-white/10 p-2 rounded-2xl w-full md:w-auto">
+                <code className="px-4 py-2 text-sm font-mono truncate max-w-[200px] md:max-w-xs">
+                  {referralLink}
+                </code>
+                <Button onClick={copyToClipboard} size="icon" variant="ghost" className="text-white hover:bg-white/20 rounded-xl">
+                  <Copy size={18} />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Team Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-none shadow-sm rounded-3xl bg-white">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
-              <Users size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Total Team Size</p>
-              <h3 className="text-2xl font-bold text-gray-900">156</h3>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-sm rounded-3xl bg-white">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
-              <UserPlus size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Direct Referrals</p>
-              <h3 className="text-2xl font-bold text-gray-900">24</h3>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-sm rounded-3xl bg-white">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
-              <Award size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Active Levels</p>
-              <h3 className="text-2xl font-bold text-gray-900">5 / 9</h3>
-            </div>
-          </CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="border-none shadow-sm rounded-3xl bg-white">
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+                  <Users size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 font-medium">Total Team Size</p>
+                  <h3 className="text-2xl font-bold text-gray-900">156</h3>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-none shadow-sm rounded-3xl bg-white">
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+                  <UserPlus size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 font-medium">Direct Referrals</p>
+                  <h3 className="text-2xl font-bold text-gray-900">24</h3>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-none shadow-sm rounded-3xl bg-white">
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
+                  <Award size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 font-medium">Active Levels</p>
+                  <h3 className="text-2xl font-bold text-gray-900">5 / 9</h3>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        <Card className="border-none shadow-sm rounded-3xl bg-white p-6">
+          <CardHeader className="px-0 pt-0">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <BarChart3 className="text-indigo-600" size={20} />
+              Level Breakdown
+            </CardTitle>
+          </CardHeader>
+          <div className="h-[240px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={levelData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="level" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} />
+                <YAxis hide />
+                <Tooltip 
+                  cursor={{fill: '#f8fafc'}}
+                  contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
+                />
+                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                  {levelData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </Card>
       </div>
 
-      {/* Team Management */}
       <Tabs defaultValue="directory" className="w-full space-y-6">
         <TabsList className="bg-white p-1 rounded-2xl border border-gray-100 h-14 w-full md:w-auto">
           <TabsTrigger value="directory" className="rounded-xl px-8 h-full font-bold data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
