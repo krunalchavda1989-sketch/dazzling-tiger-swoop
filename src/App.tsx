@@ -30,6 +30,7 @@ import UserOrders from "./pages/Dashboard/Orders";
 import Support from "./pages/Dashboard/Support";
 import MarketingTools from "./pages/Dashboard/Marketing";
 import TrainingAcademy from "./pages/Dashboard/Training";
+import Leaderboard from "./pages/Dashboard/Leaderboard";
 
 // Admin Pages
 import AdminLayout from "./components/layout/AdminLayout";
@@ -70,6 +71,7 @@ const App = () => (
               <Route index element={<DashboardOverview />} />
               <Route path="team" element={<TeamView />} />
               <Route path="wallet" element={<WalletView />} />
+              <Route path="leaderboard" element={<Leaderboard />} />
               <Route path="orders" element={<UserOrders />} />
               <Route path="marketing" element={<MarketingTools />} />
               <Route path="training" element={<TrainingAcademy />} />

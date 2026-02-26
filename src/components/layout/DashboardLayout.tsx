@@ -14,19 +14,23 @@ import {
   Package,
   HelpCircle,
   Share2,
-  BookOpen
+  BookOpen,
+  Trophy
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import NotificationDropdown from './NotificationDropdown';
+import { useAuth } from '@/hooks/useAuth';
 
 const DashboardLayout = () => {
   const location = useLocation();
+  const { profile, signOut } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const navItems = [
     { icon: <LayoutDashboard size={20} />, label: 'Overview', path: '/dashboard' },
     { icon: <Users size={20} />, label: 'My Team', path: '/dashboard/team' },
     { icon: <Wallet size={20} />, label: 'Wallet', path: '/dashboard/wallet' },
+    { icon: <Trophy size={20} />, label: 'Leaderboard', path: '/dashboard/leaderboard' },
     { icon: <Package size={20} />, label: 'My Orders', path: '/dashboard/orders' },
     { icon: <Share2 size={20} />, label: 'Marketing', path: '/dashboard/marketing' },
     { icon: <BookOpen size={20} />, label: 'Training', path: '/dashboard/training' },
@@ -51,7 +55,7 @@ const DashboardLayout = () => {
             <span className="text-xl font-bold text-gray-900">NexGen</span>
           </div>
 
-          <nav className="flex-1 px-4 space-y-1">
+          <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
             {navItems.map((item) => (
               <Link
                 key={item.path}
@@ -71,7 +75,10 @@ const DashboardLayout = () => {
           </nav>
 
           <div className="p-4 border-t border-gray-100">
-            <button className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
+            <button 
+              onClick={signOut}
+              className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+            >
               <LogOut size={20} />
               Logout
             </button>
@@ -97,12 +104,14 @@ const DashboardLayout = () => {
             <div className="h-8 w-px bg-gray-200 mx-2"></div>
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-semibold text-gray-900">Alex Johnson</p>
-                <p className="text-xs text-gray-500">Gold Member</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  {profile ? `${profile.first_name} ${profile.last_name}` : 'Loading...'}
+                </p>
+                <p className="text-xs text-gray-500 capitalize">{profile?.title || 'Member'}</p>
               </div>
               <Avatar className="h-9 w-9 border-2 border-indigo-100">
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>AJ</AvatarFallback>
+                <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.email}`} />
+                <AvatarFallback>{profile?.first_name?.[0]}{profile?.last_name?.[0]}</AvatarFallback>
               </Avatar>
             </div>
           </div>
