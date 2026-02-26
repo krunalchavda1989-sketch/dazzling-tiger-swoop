@@ -1,146 +1,152 @@
-import React, { useState } from 'react';
-import ProductCard from '@/components/shop/ProductCard';
-import { Product } from '@/types/mlm';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { 
+  Search, 
+  Filter, 
+  ShoppingBag, 
+  Star, 
+  ArrowRight,
+  ChevronRight
+} from 'lucide-react';
 import { Input } from "@/components/ui/input";
-import { Search, Filter, ShoppingCart } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Link } from 'react-router-dom';
-
-// Mock data for now
-const MOCK_PRODUCTS: Product[] = [
-  {
-    id: '1',
-    name: 'Premium Health Supplement',
-    description: 'Boost your immunity with our natural formula.',
-    retail_price: 1200,
-    distributor_price: 950,
-    image_url: 'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&q=80&w=800',
-    stock: 50,
-    category: 'Wellness'
-  },
-  {
-    id: '2',
-    name: 'Organic Green Tea',
-    description: 'Pure Himalayan green tea leaves.',
-    retail_price: 450,
-    distributor_price: 350,
-    image_url: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?auto=format&fit=crop&q=80&w=800',
-    stock: 100,
-    category: 'Beverages'
-  },
-  {
-    id: '3',
-    name: 'Smart Fitness Tracker',
-    description: 'Track your steps and heart rate.',
-    retail_price: 3500,
-    distributor_price: 2800,
-    image_url: 'https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?auto=format&fit=crop&q=80&w=800',
-    stock: 25,
-    category: 'Electronics'
-  },
-  {
-    id: '4',
-    name: 'Essential Oils Set',
-    description: 'Aromatherapy for relaxation.',
-    retail_price: 1800,
-    distributor_price: 1400,
-    image_url: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&q=80&w=800',
-    stock: 40,
-    category: 'Wellness'
-  }
-];
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 
 const Shop = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [cartCount, setCartCount] = useState(0);
-
-  const categories = ['All', 'Wellness', 'Beverages', 'Electronics'];
-
-  const filteredProducts = MOCK_PRODUCTS.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  const handleAddToCart = (product: Product) => {
-    setCartCount(prev => prev + 1);
-    // In a real app, we'd use a cart context or state management
-  };
+  const categories = ["All", "Health", "Wellness", "Personal Care", "Home", "Nutrition"];
+  
+  const products = [
+    {
+      id: 1,
+      name: "Premium Wellness Pack",
+      category: "Wellness",
+      price: 1499,
+      distributorPrice: 1199,
+      rating: 4.8,
+      reviews: 124,
+      image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=400"
+    },
+    {
+      id: 2,
+      name: "Organic Protein Blend",
+      category: "Nutrition",
+      price: 2499,
+      distributorPrice: 1999,
+      rating: 4.9,
+      reviews: 89,
+      image: "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?auto=format&fit=crop&q=80&w=400"
+    },
+    {
+      id: 3,
+      name: "Essential Oils Set",
+      category: "Personal Care",
+      price: 899,
+      distributorPrice: 699,
+      rating: 4.7,
+      reviews: 56,
+      image: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&q=80&w=400"
+    },
+    {
+      id: 4,
+      name: "Smart Fitness Tracker",
+      category: "Health",
+      price: 3999,
+      distributorPrice: 3199,
+      rating: 4.6,
+      reviews: 210,
+      image: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?auto=format&fit=crop&q=80&w=400"
+    }
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50">
       {/* Shop Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-4 flex-1 max-w-md">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input 
-                placeholder="Search products..." 
-                className="pl-10 h-11 rounded-xl border-gray-200 bg-gray-50 focus:bg-white transition-all"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+      <div className="bg-white border-b border-gray-100 pt-24 pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">NexGen Marketplace</h1>
+              <p className="text-gray-500 mt-2">Exclusive products with distributor-only pricing.</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="relative w-full md:w-80">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input 
+                  placeholder="Search products..." 
+                  className="pl-10 h-11 rounded-xl border-gray-200 focus:ring-indigo-500"
+                />
+              </div>
+              <Button variant="outline" className="h-11 rounded-xl border-gray-200">
+                <Filter className="w-4 h-4 mr-2" /> Filter
+              </Button>
+              <Link to="/cart">
+                <Button className="h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 relative">
+                  <ShoppingBag className="w-4 h-4 mr-2" /> Cart
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">2</span>
+                </Button>
+              </Link>
             </div>
           </div>
-          
-          <div className="flex items-center gap-4">
-            <Button asChild variant="ghost" className="relative rounded-full w-12 h-12 p-0">
-              <Link to="/cart">
-                <ShoppingCart className="w-6 h-6 text-gray-700" />
-                {cartCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 bg-indigo-600 text-white border-2 border-white w-6 h-6 flex items-center justify-center p-0 rounded-full">
-                    {cartCount}
-                  </Badge>
-                )}
-              </Link>
-            </Button>
+
+          {/* Categories */}
+          <div className="flex items-center gap-2 mt-8 overflow-x-auto pb-2 no-scrollbar">
+            {categories.map((cat) => (
+              <button 
+                key={cat}
+                className={`px-5 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap
+                  ${cat === "All" ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}
+                `}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Marketplace</h1>
-            <p className="text-gray-500 mt-1">Exclusive distributor pricing for NexGen members.</p>
-          </div>
-          
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0">
-            {categories.map(category => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? 'default' : 'outline'}
-                onClick={() => setSelectedCategory(category)}
-                className={`rounded-full px-6 ${selectedCategory === category ? 'bg-indigo-600' : 'bg-white border-gray-200 text-gray-600'}`}
-              >
-                {category}
-              </Button>
-            ))}
-          </div>
+      {/* Product Grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {products.map((product) => (
+            <Card key={product.id} className="group border-none shadow-sm hover:shadow-xl transition-all duration-300 rounded-[2rem] overflow-hidden bg-white">
+              <Link to={`/shop/${product.id}`}>
+                <div className="relative aspect-square overflow-hidden">
+                  <img 
+                    src={product.image} 
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <Badge className="absolute top-4 left-4 bg-white/90 backdrop-blur-md text-indigo-600 border-none font-bold">
+                    {product.category}
+                  </Badge>
+                </div>
+              </Link>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-1 mb-2">
+                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  <span className="text-sm font-bold text-gray-900">{product.rating}</span>
+                  <span className="text-xs text-gray-400">({product.reviews})</span>
+                </div>
+                <Link to={`/shop/${product.id}`}>
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-1">
+                    {product.name}
+                  </h3>
+                </Link>
+                <div className="mt-4 flex items-end gap-2">
+                  <span className="text-xl font-bold text-indigo-600">₹{product.distributorPrice}</span>
+                  <span className="text-sm text-gray-400 line-through mb-1">₹{product.price}</span>
+                </div>
+                <p className="text-[10px] text-emerald-600 font-bold mt-1 uppercase tracking-wider">Distributor Price</p>
+              </CardContent>
+              <CardFooter className="p-6 pt-0">
+                <Button className="w-full rounded-xl bg-gray-900 hover:bg-indigo-600 transition-colors h-11 font-bold">
+                  Add to Cart
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
         </div>
-
-        {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {filteredProducts.map(product => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                onAddToCart={handleAddToCart} 
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="text-gray-400 w-10 h-10" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900">No products found</h3>
-            <p className="text-gray-500">Try adjusting your search or filters.</p>
-          </div>
-        )}
       </div>
     </div>
   );
