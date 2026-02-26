@@ -11,7 +11,8 @@ import {
   Phone,
   Award,
   Copy,
-  Share2
+  Share2,
+  Network
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { showSuccess } from '@/utils/toast';
+import GenealogyTree from '@/components/team/GenealogyTree';
 
 const TeamView = () => {
   const referralLink = `${window.location.origin}/register?ref=USER_ID_123`;
@@ -103,32 +105,33 @@ const TeamView = () => {
       </div>
 
       {/* Team Management */}
-      <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden">
-        <CardHeader className="border-b border-gray-50 p-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <CardTitle className="text-lg font-bold">Team Directory</CardTitle>
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input placeholder="Search members..." className="pl-10 h-10 rounded-xl border-gray-200 w-full md:w-64" />
+      <Tabs defaultValue="directory" className="w-full space-y-6">
+        <TabsList className="bg-white p-1 rounded-2xl border border-gray-100 h-14 w-full md:w-auto">
+          <TabsTrigger value="directory" className="rounded-xl px-8 h-full font-bold data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
+            <Users className="w-4 h-4 mr-2" /> Directory
+          </TabsTrigger>
+          <TabsTrigger value="tree" className="rounded-xl px-8 h-full font-bold data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
+            <Network className="w-4 h-4 mr-2" /> Genealogy Tree
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="directory" className="m-0">
+          <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden">
+            <CardHeader className="border-b border-gray-50 p-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <CardTitle className="text-lg font-bold">Team Directory</CardTitle>
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input placeholder="Search members..." className="pl-10 h-10 rounded-xl border-gray-200 w-full md:w-64" />
+                  </div>
+                  <Button variant="outline" size="icon" className="rounded-xl border-gray-200">
+                    <Filter size={18} />
+                  </Button>
+                </div>
               </div>
-              <Button variant="outline" size="icon" className="rounded-xl border-gray-200">
-                <Filter size={18} />
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Tabs defaultValue="all" className="w-full">
-            <div className="px-6 border-b border-gray-50">
-              <TabsList className="bg-transparent h-14 gap-8">
-                <TabsTrigger value="all" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none px-0 h-14 font-bold">All Members</TabsTrigger>
-                <TabsTrigger value="direct" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none px-0 h-14 font-bold">Direct (Level 1)</TabsTrigger>
-                <TabsTrigger value="inactive" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none px-0 h-14 font-bold">Inactive</TabsTrigger>
-              </TabsList>
-            </div>
-            
-            <TabsContent value="all" className="m-0">
+            </CardHeader>
+            <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
@@ -194,8 +197,12 @@ const TeamView = () => {
               </div>
             </TabsContent>
           </Tabs>
-        </CardContent>
-      </Card>
+        </TabsContent>
+
+        <TabsContent value="tree" className="m-0">
+          <GenealogyTree />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

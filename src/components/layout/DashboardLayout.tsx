@@ -12,7 +12,8 @@ import {
   Bell,
   Menu,
   X,
-  Package
+  Package,
+  HelpCircle
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -26,6 +27,7 @@ const DashboardLayout = () => {
     { icon: <Wallet size={20} />, label: 'Wallet', path: '/dashboard/wallet' },
     { icon: <Package size={20} />, label: 'My Orders', path: '/dashboard/orders' },
     { icon: <ShoppingBag size={20} />, label: 'Shop', path: '/shop' },
+    { icon: <HelpCircle size={20} />, label: 'Support', path: '/dashboard/support' },
     { icon: <Settings size={20} />, label: 'Settings', path: '/dashboard/settings' },
   ];
 

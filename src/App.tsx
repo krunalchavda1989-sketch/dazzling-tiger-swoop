@@ -26,6 +26,7 @@ import TeamView from "./pages/Dashboard/Team";
 import WalletView from "./pages/Dashboard/Wallet";
 import Settings from "./pages/Dashboard/Settings";
 import UserOrders from "./pages/Dashboard/Orders";
+import Support from "./pages/Dashboard/Support";
 
 // Admin Pages
 import AdminLayout from "./components/layout/AdminLayout";
@@ -62,6 +63,7 @@ const App = () => (
               <Route path="team" element={<TeamView />} />
               <Route path="wallet" element={<WalletView />} />
               <Route path="orders" element={<UserOrders />} />
+              <Route path="support" element={<Support />} />
               <Route path="settings" element={<Settings />} />
             </Route>
 
