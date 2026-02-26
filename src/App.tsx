@@ -6,6 +6,28 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
+// Shop Pages
+import Shop from "./pages/Shop/Shop";
+import ProductDetail from "./pages/Shop/ProductDetail";
+import Cart from "./pages/Shop/Cart";
+import Checkout from "./pages/Shop/Checkout";
+
+// Auth Pages
+import Login from "./pages/Auth/Login";
+import Register from "./pages/Auth/Register";
+
+// Dashboard Pages
+import DashboardLayout from "./components/layout/DashboardLayout";
+import DashboardOverview from "./pages/Dashboard/Overview";
+import TeamView from "./pages/Dashboard/Team";
+import WalletView from "./pages/Dashboard/Wallet";
+
+// Admin Pages
+import AdminLayout from "./components/layout/AdminLayout";
+import AdminOverview from "./pages/Admin/Overview";
+import UserManagement from "./pages/Admin/Users";
+import ProductManagement from "./pages/Admin/Products";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -15,8 +37,32 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          
+          {/* Shop Routes */}
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/shop/:id" element={<ProductDetail />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+
+          {/* User Dashboard Routes */}
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<DashboardOverview />} />
+            <Route path="team" element={<TeamView />} />
+            <Route path="wallet" element={<WalletView />} />
+          </Route>
+
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminOverview />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="products" element={<ProductManagement />} />
+          </Route>
+
+          {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
