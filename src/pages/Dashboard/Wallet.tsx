@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { 
   Wallet, 
@@ -8,7 +10,8 @@ import {
   CreditCard,
   History,
   Plus,
-  Loader2
+  Loader2,
+  CheckCircle2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,7 +31,8 @@ import { showSuccess, showError } from '@/utils/toast';
 
 const WalletView = () => {
   const [isWithdrawing, setIsWithdrawing] = useState(false);
-  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const transactions = [
     { id: 1, type: 'Commission', amount: '+₹280.00', date: '2024-03-15', status: 'Completed', description: 'Level 1 Referral Commission' },
@@ -42,13 +46,13 @@ const WalletView = () => {
       showError("Minimum withdrawal amount is ₹500");
       return;
     }
+
     setIsWithdrawing(true);
     // Simulate API call
-    setTimeout(() => {
-      setIsWithdrawing(false);
-      showSuccess("Withdrawal request submitted successfully!");
-      setWithdrawAmount('');
-    }, 1500);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setIsWithdrawing(false);
+    setIsSuccess(true);
+    showSuccess("Withdrawal request submitted successfully!");
   };
 
   return (
@@ -63,52 +67,61 @@ const WalletView = () => {
             <Download className="mr-2 w-4 h-4" /> Export
           </Button>
           
-          <Dialog>
+          <Dialog open={isSuccess || undefined} onOpenChange={(open) => !open && setIsSuccess(false)}>
             <DialogTrigger asChild>
               <Button className="bg-indigo-600 hover:bg-indigo-700 rounded-xl h-11">
                 <Plus className="mr-2 w-4 h-4" /> Withdraw Funds
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] rounded-[2rem]">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-bold">Withdraw Funds</DialogTitle>
-                <DialogDescription>
-                  Enter the amount you wish to withdraw to your linked bank account.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-6 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="amount">Amount (₹)</Label>
-                  <Input 
-                    id="amount" 
-                    type="number" 
-                    placeholder="Min. ₹500" 
-                    value={withdrawAmount}
-                    onChange={(e) => setWithdrawAmount(e.target.value)}
-                    className="h-12 rounded-xl text-lg font-bold" 
-                  />
-                  <p className="text-xs text-gray-500">Available Balance: ₹12,450.00</p>
-                </div>
-                <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
-                  <div className="flex items-center gap-3">
-                    <CreditCard className="text-indigo-600 w-5 h-5" />
-                    <div>
-                      <p className="text-sm font-bold text-indigo-900">HDFC Bank **** 4521</p>
-                      <p className="text-xs text-indigo-600">Primary Account</p>
-                    </div>
+              {isSuccess ? (
+                <div className="py-10 text-center">
+                  <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle2 className="text-emerald-600 w-10 h-10" />
                   </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Request Sent!</h3>
+                  <p className="text-gray-500 mb-8">Your withdrawal request for ₹{withdrawAmount} is being processed. It usually takes 24-48 hours.</p>
+                  <Button onClick={() => setIsSuccess(false)} className="w-full rounded-xl bg-indigo-600">Got it</Button>
                 </div>
-              </div>
-              <DialogFooter>
-                <Button 
-                  onClick={handleWithdraw} 
-                  disabled={isWithdrawing}
-                  className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-lg font-bold"
-                >
-                  {isWithdrawing ? <Loader2 className="animate-spin mr-2" /> : null}
-                  Confirm Withdrawal
-                </Button>
-              </DialogFooter>
+              ) : (
+                <>
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-bold">Withdraw Funds</DialogTitle>
+                    <DialogDescription>
+                      Enter the amount you'd like to withdraw to your registered bank account.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="py-6 space-y-4">
+                    <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100 flex justify-between items-center">
+                      <span className="text-sm text-indigo-600 font-medium">Available Balance</span>
+                      <span className="text-lg font-bold text-indigo-700">₹12,450.00</span>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="amount">Amount (₹)</Label>
+                      <Input 
+                        id="amount" 
+                        type="number" 
+                        placeholder="Min. ₹500" 
+                        value={withdrawAmount}
+                        onChange={(e) => setWithdrawAmount(e.target.value)}
+                        className="h-12 rounded-xl" 
+                      />
+                    </div>
+                    <p className="text-[10px] text-gray-400">
+                      * A 5% processing fee will be deducted from the total amount.
+                    </p>
+                  </div>
+                  <DialogFooter>
+                    <Button 
+                      onClick={handleWithdraw} 
+                      disabled={isWithdrawing}
+                      className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold"
+                    >
+                      {isWithdrawing ? <Loader2 className="animate-spin mr-2" /> : "Confirm Withdrawal"}
+                    </Button>
+                  </DialogFooter>
+                </>
+              )}
             </DialogContent>
           </Dialog>
         </div>

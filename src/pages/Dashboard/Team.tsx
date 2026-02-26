@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { 
   Users, 
@@ -7,17 +9,25 @@ import {
   Filter,
   Mail,
   Phone,
-  Award
+  Award,
+  Copy,
+  Share2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { showSuccess } from '@/utils/toast';
 
 const TeamView = () => {
-  const levels = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-  
+  const referralLink = `${window.location.origin}/register?ref=USER_ID_123`;
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(referralLink);
+    showSuccess("Referral link copied to clipboard!");
+  };
+
   const teamMembers = [
     { id: 1, name: "John Doe", level: 1, joinDate: "2024-01-15", status: "Active", earnings: "₹4,500", referrals: 12, rank: "Gold" },
     { id: 2, name: "Alice Smith", level: 1, joinDate: "2024-01-20", status: "Active", earnings: "₹2,800", referrals: 8, rank: "Silver" },
@@ -32,10 +42,28 @@ const TeamView = () => {
           <h1 className="text-2xl font-bold text-gray-900">My Network</h1>
           <p className="text-gray-500">Manage and track your 9-level referral organization.</p>
         </div>
-        <Button className="bg-indigo-600 hover:bg-indigo-700 rounded-xl h-11">
-          <UserPlus className="mr-2 w-4 h-4" /> Invite New Member
+        <Button className="bg-indigo-600 hover:bg-indigo-700 rounded-xl h-11" onClick={copyToClipboard}>
+          <Share2 className="mr-2 w-4 h-4" /> Share Referral Link
         </Button>
       </div>
+
+      {/* Referral Link Card */}
+      <Card className="border-none shadow-sm rounded-3xl bg-indigo-600 text-white overflow-hidden">
+        <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex-1">
+            <h3 className="text-xl font-bold mb-2">Grow Your Empire</h3>
+            <p className="text-indigo-100 text-sm">Share your unique referral link with friends and earn commissions up to 9 levels deep.</p>
+          </div>
+          <div className="flex items-center gap-2 bg-white/10 p-2 rounded-2xl w-full md:w-auto">
+            <code className="px-4 py-2 text-sm font-mono truncate max-w-[200px] md:max-w-xs">
+              {referralLink}
+            </code>
+            <Button onClick={copyToClipboard} size="icon" variant="ghost" className="text-white hover:bg-white/20 rounded-xl">
+              <Copy size={18} />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Team Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
