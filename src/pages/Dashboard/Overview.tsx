@@ -129,7 +129,7 @@ const DashboardOverview = () => {
           </CardContent>
         </Card>
 
-        {/* Quick Actions */}
+        {/* Quick Actions & Milestone */}
         <div className="space-y-6">
           <Card className="border-none shadow-sm rounded-3xl bg-indigo-600 text-white">
             <CardContent className="p-6">
