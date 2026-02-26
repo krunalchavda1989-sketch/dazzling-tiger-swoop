@@ -25,6 +25,7 @@ import DashboardOverview from "./pages/Dashboard/Overview";
 import TeamView from "./pages/Dashboard/Team";
 import WalletView from "./pages/Dashboard/Wallet";
 import Settings from "./pages/Dashboard/Settings";
+import UserOrders from "./pages/Dashboard/Orders";
 
 // Admin Pages
 import AdminLayout from "./components/layout/AdminLayout";
@@ -32,6 +33,7 @@ import AdminOverview from "./pages/Admin/Overview";
 import UserManagement from "./pages/Admin/Users";
 import ProductManagement from "./pages/Admin/Products";
 import AdminSettings from "./pages/Admin/Settings";
+import AdminOrders from "./pages/Admin/Orders";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +61,7 @@ const App = () => (
               <Route index element={<DashboardOverview />} />
               <Route path="team" element={<TeamView />} />
               <Route path="wallet" element={<WalletView />} />
+              <Route path="orders" element={<UserOrders />} />
               <Route path="settings" element={<Settings />} />
             </Route>
 
@@ -67,6 +70,7 @@ const App = () => (
               <Route index element={<AdminOverview />} />
               <Route path="users" element={<UserManagement />} />
               <Route path="products" element={<ProductManagement />} />
+              <Route path="orders" element={<AdminOrders />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
 

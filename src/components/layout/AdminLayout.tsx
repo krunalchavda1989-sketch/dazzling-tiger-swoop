@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
@@ -10,7 +12,8 @@ import {
   Bell,
   Menu,
   X,
-  Search
+  Search,
+  ShoppingBag
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -23,6 +26,7 @@ const AdminLayout = () => {
     { icon: <BarChart3 size={20} />, label: 'Overview', path: '/admin' },
     { icon: <Users size={20} />, label: 'User Management', path: '/admin/users' },
     { icon: <Package size={20} />, label: 'Products', path: '/admin/products' },
+    { icon: <ShoppingBag size={20} />, label: 'Orders', path: '/admin/orders' },
     { icon: <Settings size={20} />, label: 'Settings', path: '/admin/settings' },
   ];
 
