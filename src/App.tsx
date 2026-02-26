@@ -1,3 +1,5 @@
+"use client";
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,6 +24,7 @@ import DashboardLayout from "./components/layout/DashboardLayout";
 import DashboardOverview from "./pages/Dashboard/Overview";
 import TeamView from "./pages/Dashboard/Team";
 import WalletView from "./pages/Dashboard/Wallet";
+import Settings from "./pages/Dashboard/Settings";
 
 // Admin Pages
 import AdminLayout from "./components/layout/AdminLayout";
@@ -55,6 +58,7 @@ const App = () => (
               <Route index element={<DashboardOverview />} />
               <Route path="team" element={<TeamView />} />
               <Route path="wallet" element={<WalletView />} />
+              <Route path="settings" element={<Settings />} />
             </Route>
 
             {/* Admin Routes */}

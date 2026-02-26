@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -12,52 +14,61 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { useCart } from '@/context/CartContext';
+import { showSuccess } from '@/utils/toast';
+import { Product } from '@/types/mlm';
 
 const Shop = () => {
+  const { addToCart, totalItems } = useCart();
   const categories = ["All", "Health", "Wellness", "Personal Care", "Home", "Nutrition"];
   
-  const products = [
+  const products: Product[] = [
     {
-      id: 1,
+      id: "1",
       name: "Premium Wellness Pack",
       category: "Wellness",
-      price: 1499,
-      distributorPrice: 1199,
-      rating: 4.8,
-      reviews: 124,
-      image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=400"
+      retail_price: 1499,
+      distributor_price: 1199,
+      description: "Complete wellness solution.",
+      image_url: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=400",
+      stock: 124
     },
     {
-      id: 2,
+      id: "2",
       name: "Organic Protein Blend",
       category: "Nutrition",
-      price: 2499,
-      distributorPrice: 1999,
-      rating: 4.9,
-      reviews: 89,
-      image: "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?auto=format&fit=crop&q=80&w=400"
+      retail_price: 2499,
+      distributor_price: 1999,
+      description: "High quality protein.",
+      image_url: "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?auto=format&fit=crop&q=80&w=400",
+      stock: 89
     },
     {
-      id: 3,
+      id: "3",
       name: "Essential Oils Set",
       category: "Personal Care",
-      price: 899,
-      distributorPrice: 699,
-      rating: 4.7,
-      reviews: 56,
-      image: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&q=80&w=400"
+      retail_price: 899,
+      distributor_price: 699,
+      description: "Pure essential oils.",
+      image_url: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&q=80&w=400",
+      stock: 56
     },
     {
-      id: 4,
+      id: "4",
       name: "Smart Fitness Tracker",
       category: "Health",
-      price: 3999,
-      distributorPrice: 3199,
-      rating: 4.6,
-      reviews: 210,
-      image: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?auto=format&fit=crop&q=80&w=400"
+      retail_price: 3999,
+      distributor_price: 3199,
+      description: "Track your health.",
+      image_url: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?auto=format&fit=crop&q=80&w=400",
+      stock: 210
     }
   ];
+
+  const handleAddToCart = (product: Product) => {
+    addToCart(product);
+    showSuccess(`${product.name} added to cart!`);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -83,7 +94,11 @@ const Shop = () => {
               <Link to="/cart">
                 <Button className="h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 relative">
                   <ShoppingBag className="w-4 h-4 mr-2" /> Cart
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">2</span>
+                  {totalItems > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                      {totalItems}
+                    </span>
+                  )}
                 </Button>
               </Link>
             </div>
@@ -113,7 +128,7 @@ const Shop = () => {
               <Link to={`/shop/${product.id}`}>
                 <div className="relative aspect-square overflow-hidden">
                   <img 
-                    src={product.image} 
+                    src={product.image_url} 
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
@@ -125,8 +140,8 @@ const Shop = () => {
               <CardContent className="p-6">
                 <div className="flex items-center gap-1 mb-2">
                   <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  <span className="text-sm font-bold text-gray-900">{product.rating}</span>
-                  <span className="text-xs text-gray-400">({product.reviews})</span>
+                  <span className="text-sm font-bold text-gray-900">4.8</span>
+                  <span className="text-xs text-gray-400">(124)</span>
                 </div>
                 <Link to={`/shop/${product.id}`}>
                   <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-1">
@@ -134,13 +149,16 @@ const Shop = () => {
                   </h3>
                 </Link>
                 <div className="mt-4 flex items-end gap-2">
-                  <span className="text-xl font-bold text-indigo-600">₹{product.distributorPrice}</span>
-                  <span className="text-sm text-gray-400 line-through mb-1">₹{product.price}</span>
+                  <span className="text-xl font-bold text-indigo-600">₹{product.distributor_price}</span>
+                  <span className="text-sm text-gray-400 line-through mb-1">₹{product.retail_price}</span>
                 </div>
                 <p className="text-[10px] text-emerald-600 font-bold mt-1 uppercase tracking-wider">Distributor Price</p>
               </CardContent>
               <CardFooter className="p-6 pt-0">
-                <Button className="w-full rounded-xl bg-gray-900 hover:bg-indigo-600 transition-colors h-11 font-bold">
+                <Button 
+                  onClick={() => handleAddToCart(product)}
+                  className="w-full rounded-xl bg-gray-900 hover:bg-indigo-600 transition-colors h-11 font-bold"
+                >
                   Add to Cart
                 </Button>
               </CardFooter>
