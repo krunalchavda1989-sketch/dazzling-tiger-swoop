@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   MessageSquare, 
   HelpCircle, 
@@ -8,14 +8,33 @@ import {
   Phone, 
   FileText,
   ChevronRight,
-  Search
+  Search,
+  Loader2,
+  CheckCircle2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Separator } from "@/components/ui/separator";
+import { showSuccess } from '@/utils/toast';
 
 const Support = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    // Simulate ticket submission
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    setIsSubmitting(false);
+    setIsSuccess(true);
+    showSuccess("Support ticket submitted successfully!");
+  };
+
   const faqs = [
     {
       question: "How do I earn referral commissions?",
@@ -128,16 +147,28 @@ const Support = () => {
               <Separator />
               <div className="pt-2">
                 <h4 className="font-bold text-gray-900 mb-4">Send a Message</h4>
-                <form className="space-y-4">
-                  <Input placeholder="Subject" className="rounded-xl h-11" />
-                  <textarea 
-                    placeholder="How can we help?" 
-                    className="w-full rounded-xl border border-gray-200 p-3 min-h-[120px] text-sm focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                  ></textarea>
-                  <Button className="w-full bg-indigo-600 hover:bg-indigo-700 rounded-xl h-11 font-bold">
-                    Send Message
-                  </Button>
-                </form>
+                {isSuccess ? (
+                  <div className="text-center py-8 space-y-4">
+                    <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto text-emerald-600">
+                      <CheckCircle2 size={24} />
+                    </div>
+                    <p className="text-sm font-medium text-gray-900">Message Sent!</p>
+                    <Button variant="outline" onClick={() => setIsSuccess(false)} className="rounded-xl">Send Another</Button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <Input placeholder="Subject" className="rounded-xl h-11" required />
+                    <textarea 
+                      placeholder="How can we help?" 
+                      required
+                      className="w-full rounded-xl border border-gray-200 p-3 min-h-[120px] text-sm focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                    ></textarea>
+                    <Button disabled={isSubmitting} className="w-full bg-indigo-600 hover:bg-indigo-700 rounded-xl h-11 font-bold">
+                      {isSubmitting ? <Loader2 className="animate-spin mr-2 w-4 h-4" /> : null}
+                      Send Message
+                    </Button>
+                  </form>
+                )}
               </div>
             </CardContent>
           </Card>

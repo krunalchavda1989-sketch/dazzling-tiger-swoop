@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Settings as SettingsIcon, 
   Shield, 
@@ -8,7 +8,8 @@ import {
   Mail, 
   Database,
   Save,
-  Lock
+  Lock,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,12 +17,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { showSuccess } from '@/utils/toast';
+import { showSuccess, showError } from '@/utils/toast';
+import { supabase } from '@/lib/supabase';
 
 const AdminSettings = () => {
-  const handleSave = (e: React.FormEvent) => {
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    showSuccess("Platform settings updated successfully!");
+    setIsSaving(true);
+    
+    // Simulate API call to save settings
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      showSuccess("Platform settings updated successfully!");
+    } catch (error) {
+      showError("Failed to update settings");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -144,8 +158,9 @@ const AdminSettings = () => {
 
       <div className="flex justify-end gap-4">
         <Button variant="outline" className="h-12 rounded-xl px-8">Cancel</Button>
-        <Button onClick={handleSave} className="h-12 rounded-xl px-8 bg-indigo-600 hover:bg-indigo-700 font-bold">
-          <Save className="w-4 h-4 mr-2" /> Save All Settings
+        <Button onClick={handleSave} disabled={isSaving} className="h-12 rounded-xl px-8 bg-indigo-600 hover:bg-indigo-700 font-bold">
+          {isSaving ? <Loader2 className="animate-spin mr-2 w-4 h-4" /> : <Save className="w-4 h-4 mr-2" />}
+          Save All Settings
         </Button>
       </div>
     </div>
