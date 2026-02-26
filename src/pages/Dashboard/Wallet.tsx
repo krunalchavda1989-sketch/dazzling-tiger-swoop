@@ -14,7 +14,9 @@ import {
   CheckCircle2,
   Building2,
   User,
-  Hash
+  Hash,
+  Clock,
+  XCircle
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,6 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { showSuccess, showError } from '@/utils/toast';
 import { supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
@@ -37,35 +40,48 @@ import { format } from 'date-fns';
 const WalletView = () => {
   const [loading, setLoading] = useState(true);
   const [wallet, setWallet] = useState<any>(null);
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [commissions, setCommissions] = useState<any[]>([]);
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [isEditingBank, setIsEditingBank] = useState(false);
 
   useEffect(() => {
-    async function fetchWalletData() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: walletData } = await supabase
-        .from('wallets')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-      
-      const { data: txData } = await supabase
-        .from('commissions')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      setWallet(walletData || { balance: 0, total_earned: 0, withdrawable_amount: 0 });
-      setTransactions(txData || []);
-      setLoading(false);
-    }
     fetchWalletData();
   }, []);
+
+  async function fetchWalletData() {
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Fetch Wallet
+    const { data: walletData } = await supabase
+      .from('wallets')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+    
+    // Fetch Commissions
+    const { data: commData } = await supabase
+      .from('commissions')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    // Fetch Withdrawals
+    const { data: withData } = await supabase
+      .from('withdrawals')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    setWallet(walletData || { balance: 0, total_earned: 0, withdrawable_amount: 0 });
+    setCommissions(commData || []);
+    setWithdrawals(withData || []);
+    setLoading(false);
+  }
 
   const handleWithdraw = async () => {
     if (!withdrawAmount || parseFloat(withdrawAmount) < 500) {
@@ -91,6 +107,7 @@ const WalletView = () => {
 
       setIsSuccess(true);
       showSuccess("Withdrawal request submitted successfully!");
+      fetchWalletData(); // Refresh data
     } catch (error: any) {
       showError(error.message);
     } finally {
@@ -269,62 +286,121 @@ const WalletView = () => {
         </Card>
       </div>
 
-      <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden">
-        <CardHeader className="border-b border-gray-50 p-6">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-bold">Transaction History</CardTitle>
-            <Button variant="ghost" size="sm" className="text-indigo-600">
-              <Filter className="mr-2 w-4 h-4" /> Filter
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-gray-50/50">
-                  <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Transaction</th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Amount</th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {transactions.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-50 text-emerald-600`}>
-                          <ArrowDownLeft size={20} />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-gray-900">Level {tx.level} {tx.type} Commission</p>
-                          <p className="text-xs text-gray-500 capitalize">{tx.type}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-gray-600">{format(new Date(tx.created_at), 'MMM d, yyyy')}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`text-sm font-bold text-emerald-600`}>
-                        +₹{tx.amount.toLocaleString()}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge className={`rounded-full border-none font-bold ${
-                        tx.status === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                      }`}>
-                        {tx.status}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="commissions" className="w-full space-y-6">
+        <TabsList className="bg-white p-1 rounded-2xl border border-gray-100 h-14 w-full md:w-auto">
+          <TabsTrigger value="commissions" className="rounded-xl px-8 h-full font-bold data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
+            <History className="w-4 h-4 mr-2" /> Commissions
+          </TabsTrigger>
+          <TabsTrigger value="withdrawals" className="rounded-xl px-8 h-full font-bold data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
+            <ArrowUpRight className="w-4 h-4 mr-2" /> Withdrawals
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="commissions" className="m-0">
+          <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden">
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="bg-gray-50/50">
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Transaction</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Amount</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {commissions.map((tx) => (
+                      <tr key={tx.id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-4">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-50 text-emerald-600`}>
+                              <ArrowDownLeft size={20} />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-gray-900">Level {tx.level} {tx.type} Commission</p>
+                              <p className="text-xs text-gray-500 capitalize">{tx.type}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-gray-600">{format(new Date(tx.created_at), 'MMM d, yyyy')}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`text-sm font-bold text-emerald-600`}>
+                            +₹{tx.amount.toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Badge className={`rounded-full border-none font-bold capitalize ${
+                            tx.status === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                          }`}>
+                            {tx.status}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="withdrawals" className="m-0">
+          <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden">
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="bg-gray-50/50">
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Request ID</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Amount</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {withdrawals.map((req) => (
+                      <tr key={req.id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-4">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-indigo-50 text-indigo-600`}>
+                              <ArrowUpRight size={20} />
+                            </div>
+                            <span className="text-sm font-bold text-gray-900">WTH-{req.id.slice(0, 8).toUpperCase()}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-gray-600">{format(new Date(req.created_at), 'MMM d, yyyy')}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm font-bold text-gray-900">₹{req.amount.toLocaleString()}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Badge className={`rounded-full border-none font-bold capitalize ${
+                            req.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 
+                            req.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
+                          }`}>
+                            {req.status}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                    {withdrawals.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
+                          No withdrawal requests found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

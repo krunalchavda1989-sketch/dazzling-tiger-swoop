@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Users, 
   UserPlus, 
@@ -13,7 +13,8 @@ import {
   Copy,
   Share2,
   Network,
-  BarChart3
+  BarChart3,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { showSuccess } from '@/utils/toast';
 import GenealogyTree from '@/components/team/GenealogyTree';
+import { supabase } from '@/lib/supabase';
 import { 
   BarChart, 
   Bar, 
@@ -34,7 +36,39 @@ import {
 } from 'recharts';
 
 const TeamView = () => {
-  const referralLink = `${window.location.origin}/register?ref=USER_ID_123`;
+  const [loading, setLoading] = useState(true);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [stats, setStats] = useState({ total: 0, direct: 0, levels: 0 });
+  const [userId, setUserId] = useState("");
+
+  useEffect(() => {
+    fetchTeamData();
+  }, []);
+
+  async function fetchTeamData() {
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    setUserId(user.id);
+
+    // Fetch Direct Referrals
+    const { data: directs } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('referrer_id', user.id);
+
+    // Fetch All Downline (Simplified for now, showing direct and their direct)
+    // In a real app, this would be a recursive query or a flattened tree table
+    setTeamMembers(directs || []);
+    setStats({
+      total: directs?.length || 0, // This should be total recursive count
+      direct: directs?.length || 0,
+      levels: 1 // This should be max depth
+    });
+    setLoading(false);
+  }
+
+  const referralLink = `${window.location.origin}/register?ref=${userId}`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(referralLink);
@@ -42,23 +76,24 @@ const TeamView = () => {
   };
 
   const levelData = [
-    { level: 'L1', count: 24, color: '#6366f1' },
-    { level: 'L2', count: 48, color: '#818cf8' },
-    { level: 'L3', count: 32, color: '#a5b4fc' },
-    { level: 'L4', count: 18, color: '#c7d2fe' },
-    { level: 'L5', count: 12, color: '#e0e7ff' },
-    { level: 'L6', count: 8, color: '#f5f3ff' },
-    { level: 'L7', count: 5, color: '#f5f3ff' },
-    { level: 'L8', count: 3, color: '#f5f3ff' },
-    { level: 'L9', count: 1, color: '#f5f3ff' },
+    { level: 'L1', count: stats.direct, color: '#6366f1' },
+    { level: 'L2', count: 0, color: '#818cf8' },
+    { level: 'L3', count: 0, color: '#a5b4fc' },
+    { level: 'L4', count: 0, color: '#c7d2fe' },
+    { level: 'L5', count: 0, color: '#e0e7ff' },
+    { level: 'L6', count: 0, color: '#f5f3ff' },
+    { level: 'L7', count: 0, color: '#f5f3ff' },
+    { level: 'L8', count: 0, color: '#f5f3ff' },
+    { level: 'L9', count: 0, color: '#f5f3ff' },
   ];
 
-  const teamMembers = [
-    { id: 1, name: "John Doe", level: 1, joinDate: "2024-01-15", status: "Active", earnings: "₹4,500", referrals: 12, rank: "Gold" },
-    { id: 2, name: "Alice Smith", level: 1, joinDate: "2024-01-20", status: "Active", earnings: "₹2,800", referrals: 8, rank: "Silver" },
-    { id: 3, name: "Mike Kane", level: 2, joinDate: "2024-02-05", status: "Inactive", earnings: "₹0", referrals: 0, rank: "Distributor" },
-    { id: 4, name: "Rose Lee", level: 2, joinDate: "2024-02-10", status: "Active", earnings: "₹1,200", referrals: 4, rank: "Silver" },
-  ];
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -99,7 +134,7 @@ const TeamView = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 font-medium">Total Team Size</p>
-                  <h3 className="text-2xl font-bold text-gray-900">156</h3>
+                  <h3 className="text-2xl font-bold text-gray-900">{stats.total}</h3>
                 </div>
               </CardContent>
             </Card>
@@ -110,7 +145,7 @@ const TeamView = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 font-medium">Direct Referrals</p>
-                  <h3 className="text-2xl font-bold text-gray-900">24</h3>
+                  <h3 className="text-2xl font-bold text-gray-900">{stats.direct}</h3>
                 </div>
               </CardContent>
             </Card>
@@ -121,7 +156,7 @@ const TeamView = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 font-medium">Active Levels</p>
-                  <h3 className="text-2xl font-bold text-gray-900">5 / 9</h3>
+                  <h3 className="text-2xl font-bold text-gray-900">{stats.levels} / 9</h3>
                 </div>
               </CardContent>
             </Card>
@@ -191,7 +226,6 @@ const TeamView = () => {
                       <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Level</th>
                       <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Rank</th>
                       <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Earnings</th>
                       <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Action</th>
                     </tr>
                   </thead>
@@ -201,32 +235,29 @@ const TeamView = () => {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
-                              {member.name.split(' ').map(n => n[0]).join('')}
+                              {member.first_name[0]}{member.last_name[0]}
                             </div>
                             <div>
-                              <p className="text-sm font-bold text-gray-900">{member.name}</p>
-                              <p className="text-xs text-gray-500">Joined {member.joinDate}</p>
+                              <p className="text-sm font-bold text-gray-900">{member.first_name} {member.last_name}</p>
+                              <p className="text-xs text-gray-500">Joined {format(new Date(member.created_at), 'MMM d, yyyy')}</p>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <Badge variant="outline" className="rounded-full border-gray-200 text-gray-600">
-                            Level {member.level}
+                            Level 1
                           </Badge>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm font-medium text-gray-700">{member.rank}</span>
+                          <span className="text-sm font-medium text-gray-700 capitalize">{member.role}</span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-1.5">
-                            <div className={`w-2 h-2 rounded-full ${member.status === 'Active' ? 'bg-emerald-500' : 'bg-gray-300'}`}></div>
-                            <span className={`text-sm font-medium ${member.status === 'Active' ? 'text-emerald-600' : 'text-gray-500'}`}>
-                              {member.status}
+                            <div className={`w-2 h-2 rounded-full ${member.subscription_status === 'active' ? 'bg-emerald-500' : 'bg-gray-300'}`}></div>
+                            <span className={`text-sm font-medium ${member.subscription_status === 'active' ? 'text-emerald-600' : 'text-gray-500'} capitalize`}>
+                              {member.subscription_status}
                             </span>
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-sm font-bold text-gray-900">{member.earnings}</span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
@@ -243,6 +274,13 @@ const TeamView = () => {
                         </td>
                       </tr>
                     ))}
+                    {teamMembers.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                          No team members found. Start referring to grow your network!
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
