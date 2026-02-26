@@ -10,26 +10,12 @@ import {
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useCart } from '@/context/CartContext';
 
 const Cart = () => {
-  const [items, setItems] = React.useState([
-    {
-      id: 1,
-      name: "Premium Wellness Pack",
-      price: 1199,
-      quantity: 1,
-      image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=200"
-    },
-    {
-      id: 2,
-      name: "Organic Protein Blend",
-      price: 1999,
-      quantity: 1,
-      image: "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?auto=format&fit=crop&q=80&w=200"
-    }
-  ]);
+  const { cart, removeFromCart, updateQuantity, totalPrice } = useCart();
 
-  const subtotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  const subtotal = totalPrice;
   const shipping = 0;
   const total = subtotal + shipping;
 
@@ -46,25 +32,38 @@ const Cart = () => {
         <div className="grid lg:grid-cols-3 gap-12">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-6">
-            {items.length > 0 ? (
-              items.map((item) => (
+            {cart.length > 0 ? (
+              cart.map((item) => (
                 <div key={item.id} className="bg-white p-6 rounded-3xl border border-gray-100 flex flex-col sm:flex-row items-center gap-6">
                   <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gray-50 flex-shrink-0">
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 text-center sm:text-left">
                     <h3 className="font-bold text-gray-900 text-lg">{item.name}</h3>
-                    <p className="text-indigo-600 font-bold mt-1">₹{item.price}</p>
+                    <p className="text-indigo-600 font-bold mt-1">₹{item.distributor_price}</p>
                   </div>
                   <div className="flex items-center border border-gray-100 rounded-xl p-1">
-                    <button className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-indigo-600"><Minus size={16} /></button>
+                    <button 
+                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-indigo-600"
+                    >
+                      <Minus size={16} />
+                    </button>
                     <span className="w-10 text-center font-bold">{item.quantity}</span>
-                    <button className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-indigo-600"><Plus size={16} /></button>
+                    <button 
+                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-indigo-600"
+                    >
+                      <Plus size={16} />
+                    </button>
                   </div>
                   <div className="text-right hidden sm:block">
-                    <p className="font-bold text-gray-900">₹{item.price * item.quantity}</p>
+                    <p className="font-bold text-gray-900">₹{item.distributor_price * item.quantity}</p>
                   </div>
-                  <button className="text-gray-300 hover:text-red-500 transition-colors">
+                  <button 
+                    onClick={() => removeFromCart(item.id)}
+                    className="text-gray-300 hover:text-red-500 transition-colors"
+                  >
                     <Trash2 size={20} />
                   </button>
                 </div>
@@ -102,7 +101,7 @@ const Cart = () => {
                   <span className="text-indigo-600">₹{total}</span>
                 </div>
               </div>
-              <Button asChild className="w-full h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-bold shadow-lg shadow-indigo-100">
+              <Button asChild disabled={cart.length === 0} className="w-full h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-bold shadow-lg shadow-indigo-100">
                 <Link to="/checkout">
                   Checkout <ChevronRight className="ml-2 w-5 h-5" />
                 </Link>

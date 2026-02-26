@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   Star, 
@@ -9,39 +9,75 @@ import {
   ArrowLeft,
   Plus,
   Minus,
-  Award
+  Award,
+  Loader2
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { supabase } from '@/lib/supabase';
+import { useCart } from '@/context/CartContext';
+import { showSuccess } from '@/utils/toast';
+import { Product } from '@/types/mlm';
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const [quantity, setQuantity] = React.useState(1);
+  const { addToCart } = useCart();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [quantity, setQuantity] = useState(1);
 
-  // Mock product data
-  const product = {
-    id: 1,
-    name: "Premium Wellness Pack",
-    category: "Wellness",
-    price: 1499,
-    distributorPrice: 1199,
-    rating: 4.8,
-    reviews: 124,
-    description: "Our Premium Wellness Pack is a comprehensive solution designed to support your daily health needs. Formulated with high-quality ingredients, it provides essential nutrients to boost your energy levels and overall well-being.",
-    features: [
-      "100% Organic Ingredients",
-      "No Artificial Preservatives",
-      "Rich in Antioxidants",
-      "Supports Immune System"
-    ],
-    repurchaseIncome: [
-      { level: 1, percentage: "5%", amount: "₹60" },
-      { level: 2, percentage: "3%", amount: "₹36" },
-      { level: 3, percentage: "2%", amount: "₹24" }
-    ],
-    image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=800"
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (!error && data) {
+        setProduct(data);
+      }
+      setLoading(false);
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  const handleAddToCart = () => {
+    if (product) {
+      for (let i = 0; i < quantity; i++) {
+        addToCart(product);
+      }
+      showSuccess(`${product.name} added to cart!`);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <h2 className="text-2xl font-bold mb-4">Product not found</h2>
+        <Button asChild>
+          <Link to="/shop">Back to Shop</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  const repurchaseIncome = [
+    { level: 1, percentage: "3%", amount: `₹${(product.distributor_price * 0.03).toFixed(2)}` },
+    { level: 2, percentage: "2%", amount: `₹${(product.distributor_price * 0.02).toFixed(2)}` },
+    { level: 3, percentage: "1%", amount: `₹${(product.distributor_price * 0.01).toFixed(2)}` }
+  ];
 
   return (
     <div className="min-h-screen bg-white pt-24 pb-12">
@@ -55,7 +91,7 @@ const ProductDetail = () => {
           <div className="relative">
             <div className="aspect-square rounded-[3rem] overflow-hidden bg-gray-50 border border-gray-100">
               <img 
-                src={product.image} 
+                src={product.image_url} 
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
@@ -80,15 +116,15 @@ const ProductDetail = () => {
                     <Star key={star} className={`w-5 h-5 ${star <= 4 ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`} />
                   ))}
                 </div>
-                <span className="text-sm font-medium text-gray-500">{product.reviews} Customer Reviews</span>
+                <span className="text-sm font-medium text-gray-500">124 Customer Reviews</span>
               </div>
             </div>
 
             <div className="mb-8 p-6 bg-gray-50 rounded-3xl border border-gray-100">
               <div className="flex items-end gap-3 mb-2">
-                <span className="text-3xl font-bold text-indigo-600">₹{product.distributorPrice}</span>
-                <span className="text-lg text-gray-400 line-through mb-1">₹{product.price}</span>
-                <Badge className="bg-emerald-100 text-emerald-700 border-none mb-1 ml-2">Save 20%</Badge>
+                <span className="text-3xl font-bold text-indigo-600">₹{product.distributor_price}</span>
+                <span className="text-lg text-gray-400 line-through mb-1">₹{product.retail_price}</span>
+                <Badge className="bg-emerald-100 text-emerald-700 border-none mb-1 ml-2">Save {Math.round((1 - product.distributor_price / product.retail_price) * 100)}%</Badge>
               </div>
               <p className="text-xs text-gray-500 font-medium">Exclusive Distributor Price</p>
             </div>
@@ -104,7 +140,7 @@ const ProductDetail = () => {
                 <h3 className="font-bold text-indigo-900">Repurchase Income</h3>
               </div>
               <div className="grid grid-cols-3 gap-4">
-                {product.repurchaseIncome.map((item) => (
+                {repurchaseIncome.map((item) => (
                   <div key={item.level} className="text-center">
                     <p className="text-[10px] text-indigo-400 font-bold uppercase">Level {item.level}</p>
                     <p className="text-lg font-bold text-indigo-700">{item.percentage}</p>
@@ -130,7 +166,10 @@ const ProductDetail = () => {
                   <Plus size={18} />
                 </button>
               </div>
-              <Button className="flex-1 h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-bold shadow-lg shadow-indigo-100">
+              <Button 
+                onClick={handleAddToCart}
+                className="flex-1 h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-bold shadow-lg shadow-indigo-100"
+              >
                 <ShoppingBag className="mr-2 w-5 h-5" /> Add to Cart
               </Button>
             </div>
