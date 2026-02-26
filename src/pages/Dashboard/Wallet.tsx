@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Wallet, 
   ArrowUpRight, 
@@ -31,19 +31,41 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { showSuccess, showError } from '@/utils/toast';
+import { supabase } from '@/lib/supabase';
+import { format } from 'date-fns';
 
 const WalletView = () => {
+  const [loading, setLoading] = useState(true);
+  const [wallet, setWallet] = useState<any>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [isEditingBank, setIsEditingBank] = useState(false);
 
-  const transactions = [
-    { id: 1, type: 'Commission', amount: '+₹280.00', date: '2024-03-15', status: 'Completed', description: 'Level 1 Referral Commission' },
-    { id: 2, type: 'Withdrawal', amount: '-₹5,000.00', date: '2024-03-12', status: 'Pending', description: 'Bank Transfer' },
-    { id: 3, type: 'Repurchase', amount: '+₹45.00', date: '2024-03-10', status: 'Completed', description: 'Level 2 Repurchase Income' },
-    { id: 4, type: 'Commission', amount: '+₹140.00', date: '2024-03-08', status: 'Completed', description: 'Level 2 Referral Commission' },
-  ];
+  useEffect(() => {
+    async function fetchWalletData() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: walletData } = await supabase
+        .from('wallets')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      
+      const { data: txData } = await supabase
+        .from('commissions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      setWallet(walletData || { balance: 0, total_earned: 0, withdrawable_amount: 0 });
+      setTransactions(txData || []);
+      setLoading(false);
+    }
+    fetchWalletData();
+  }, []);
 
   const handleWithdraw = async () => {
     if (!withdrawAmount || parseFloat(withdrawAmount) < 500) {
@@ -51,12 +73,38 @@ const WalletView = () => {
       return;
     }
 
+    if (parseFloat(withdrawAmount) > wallet.balance) {
+      showError("Insufficient balance");
+      return;
+    }
+
     setIsWithdrawing(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsWithdrawing(false);
-    setIsSuccess(true);
-    showSuccess("Withdrawal request submitted successfully!");
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase.from('withdrawals').insert({
+        user_id: user?.id,
+        amount: parseFloat(withdrawAmount),
+        status: 'pending'
+      });
+
+      if (error) throw error;
+
+      setIsSuccess(true);
+      showSuccess("Withdrawal request submitted successfully!");
+    } catch (error: any) {
+      showError(error.message);
+    } finally {
+      setIsWithdrawing(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -97,7 +145,7 @@ const WalletView = () => {
                   <div className="py-6 space-y-4">
                     <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100 flex justify-between items-center">
                       <span className="text-sm text-indigo-600 font-medium">Available Balance</span>
-                      <span className="text-lg font-bold text-indigo-700">₹12,450.00</span>
+                      <span className="text-lg font-bold text-indigo-700">₹{wallet.balance.toLocaleString()}</span>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="amount">Amount (₹)</Label>
@@ -139,7 +187,7 @@ const WalletView = () => {
             <div className="flex justify-between items-start mb-12">
               <div>
                 <p className="text-indigo-100 text-sm font-medium mb-1">Available Balance</p>
-                <h2 className="text-5xl font-bold">₹12,450.00</h2>
+                <h2 className="text-5xl font-bold">₹{wallet.balance.toLocaleString()}</h2>
               </div>
               <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
                 <Wallet className="text-white w-8 h-8" />
@@ -149,11 +197,11 @@ const WalletView = () => {
             <div className="grid grid-cols-2 gap-8">
               <div>
                 <p className="text-indigo-100 text-xs font-medium mb-1 uppercase tracking-wider">Total Earned</p>
-                <p className="text-2xl font-bold">₹45,200.00</p>
+                <p className="text-2xl font-bold">₹{wallet.total_earned.toLocaleString()}</p>
               </div>
               <div>
-                <p className="text-indigo-100 text-xs font-medium mb-1 uppercase tracking-wider">Total Withdrawn</p>
-                <p className="text-2xl font-bold">₹32,750.00</p>
+                <p className="text-indigo-100 text-xs font-medium mb-1 uppercase tracking-wider">Withdrawable</p>
+                <p className="text-2xl font-bold">₹{wallet.withdrawable_amount.toLocaleString()}</p>
               </div>
             </div>
           </CardContent>
@@ -246,30 +294,26 @@ const WalletView = () => {
                   <tr key={tx.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                          tx.amount.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
-                        }`}>
-                          {tx.amount.startsWith('+') ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-50 text-emerald-600`}>
+                          <ArrowDownLeft size={20} />
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-gray-900">{tx.description}</p>
-                          <p className="text-xs text-gray-500">{tx.type}</p>
+                          <p className="text-sm font-bold text-gray-900">Level {tx.level} {tx.type} Commission</p>
+                          <p className="text-xs text-gray-500 capitalize">{tx.type}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-gray-600">{tx.date}</span>
+                      <span className="text-sm text-gray-600">{format(new Date(tx.created_at), 'MMM d, yyyy')}</span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`text-sm font-bold ${
-                        tx.amount.startsWith('+') ? 'text-emerald-600' : 'text-red-600'
-                      }`}>
-                        {tx.amount}
+                      <span className={`text-sm font-bold text-emerald-600`}>
+                        +₹{tx.amount.toLocaleString()}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <Badge className={`rounded-full border-none font-bold ${
-                        tx.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                        tx.status === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
                       }`}>
                         {tx.status}
                       </Badge>
