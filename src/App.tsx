@@ -1,3 +1,5 @@
+"use client";
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,6 +31,7 @@ import AdminLayout from "./components/layout/AdminLayout";
 import AdminOverview from "./pages/Admin/Overview";
 import UserManagement from "./pages/Admin/Users";
 import ProductManagement from "./pages/Admin/Products";
+import AdminSettings from "./pages/Admin/Settings";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +67,7 @@ const App = () => (
               <Route index element={<AdminOverview />} />
               <Route path="users" element={<UserManagement />} />
               <Route path="products" element={<ProductManagement />} />
+              <Route path="settings" element={<AdminSettings />} />
             </Route>
 
             {/* Catch-all */}
