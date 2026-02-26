@@ -13,7 +13,8 @@ import {
   Menu,
   X,
   Search,
-  ShoppingBag
+  ShoppingBag,
+  Wallet
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,7 @@ const AdminLayout = () => {
     { icon: <Users size={20} />, label: 'User Management', path: '/admin/users' },
     { icon: <Package size={20} />, label: 'Products', path: '/admin/products' },
     { icon: <ShoppingBag size={20} />, label: 'Orders', path: '/admin/orders' },
+    { icon: <Wallet size={20} />, label: 'Withdrawals', path: '/admin/withdrawals' },
     { icon: <Settings size={20} />, label: 'Settings', path: '/admin/settings' },
   ];
 

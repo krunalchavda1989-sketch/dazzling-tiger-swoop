@@ -13,7 +13,8 @@ import {
   Menu,
   X,
   Package,
-  HelpCircle
+  HelpCircle,
+  Share2
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -26,6 +27,7 @@ const DashboardLayout = () => {
     { icon: <Users size={20} />, label: 'My Team', path: '/dashboard/team' },
     { icon: <Wallet size={20} />, label: 'Wallet', path: '/dashboard/wallet' },
     { icon: <Package size={20} />, label: 'My Orders', path: '/dashboard/orders' },
+    { icon: <Share2 size={20} />, label: 'Marketing', path: '/dashboard/marketing' },
     { icon: <ShoppingBag size={20} />, label: 'Shop', path: '/shop' },
     { icon: <HelpCircle size={20} />, label: 'Support', path: '/dashboard/support' },
     { icon: <Settings size={20} />, label: 'Settings', path: '/dashboard/settings' },
