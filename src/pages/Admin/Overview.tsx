@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Users, 
   ShoppingBag, 
@@ -9,9 +9,11 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Activity,
-  Clock
+  Clock,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { 
   LineChart, 
   Line, 
@@ -23,30 +25,79 @@ import {
   AreaChart,
   Area
 } from 'recharts';
+import { supabase } from '@/lib/supabase';
 
 const AdminOverview = () => {
-  const data = [
-    { name: 'Mon', users: 40, sales: 2400 },
-    { name: 'Tue', users: 30, sales: 1398 },
-    { name: 'Wed', users: 20, sales: 9800 },
-    { name: 'Thu', users: 27, sales: 3908 },
-    { name: 'Fri', users: 18, sales: 4800 },
-    { name: 'Sat', users: 23, sales: 3800 },
-    { name: 'Sun', users: 34, sales: 4300 },
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      setLoading(true);
+      
+      // Fetch Total Users
+      const { count: userCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      // Fetch Total Sales
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('total_amount')
+        .eq('payment_status', 'paid');
+      
+      const totalSales = orders?.reduce((sum, order) => sum + order.total_amount, 0) || 0;
+
+      // Fetch Commissions Paid
+      const { data: commissions } = await supabase
+        .from('commissions')
+        .select('amount')
+        .eq('status', 'paid');
+      
+      const totalCommissions = commissions?.reduce((sum, comm) => sum + comm.amount, 0) || 0;
+
+      // Fetch Active Subscriptions
+      const { count: activeSubs } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('subscription_status', 'active');
+
+      setStats({
+        userCount: userCount || 0,
+        totalSales: totalSales,
+        totalCommissions: totalCommissions,
+        activeSubs: activeSubs || 0
+      });
+      
+      setLoading(false);
+    };
+
+    fetchStats();
+  }, []);
+
+  const chartData = [
+    { name: 'Mon', sales: 2400 },
+    { name: 'Tue', sales: 1398 },
+    { name: 'Wed', sales: 9800 },
+    { name: 'Thu', sales: 3908 },
+    { name: 'Fri', sales: 4800 },
+    { name: 'Sat', sales: 3800 },
+    { name: 'Sun', sales: 4300 },
   ];
 
-  const stats = [
-    { label: 'Total Users', value: '1,284', icon: <Users />, trend: '+12%', up: true },
-    { label: 'Total Sales', value: '₹4,52,000', icon: <ShoppingBag />, trend: '+8%', up: true },
-    { label: 'Commissions Paid', value: '₹1,12,000', icon: <DollarSign />, trend: '+14%', up: true },
-    { label: 'Active Subscriptions', value: '842', icon: <Activity />, trend: '-2%', up: false },
-  ];
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
 
-  const recentActivity = [
-    { id: 1, user: "John Doe", action: "New Registration", time: "2 mins ago", amount: "₹2,800" },
-    { id: 2, user: "Sarah Miller", action: "Product Purchase", time: "15 mins ago", amount: "₹1,499" },
-    { id: 3, user: "Mike Ross", action: "Withdrawal Request", time: "1 hour ago", amount: "₹5,000" },
-    { id: 4, user: "Emma Wilson", action: "Rank Upgrade", time: "3 hours ago", amount: "Silver" },
+  const statCards = [
+    { label: 'Total Users', value: stats.userCount.toLocaleString(), icon: <Users />, trend: '+12%', up: true },
+    { label: 'Total Sales', value: `₹${stats.totalSales.toLocaleString()}`, icon: <ShoppingBag />, trend: '+8%', up: true },
+    { label: 'Commissions Paid', value: `₹${stats.totalCommissions.toLocaleString()}`, icon: <DollarSign />, trend: '+14%', up: true },
+    { label: 'Active Subscriptions', value: stats.activeSubs.toLocaleString(), icon: <Activity />, trend: '+5%', up: true },
   ];
 
   return (
@@ -63,7 +114,7 @@ const AdminOverview = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, i) => (
+        {statCards.map((stat, i) => (
           <Card key={i} className="border-none shadow-sm rounded-3xl">
             <CardContent className="p-6">
               <div className="flex justify-between items-start mb-4">
@@ -90,7 +141,7 @@ const AdminOverview = () => {
             </CardHeader>
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data}>
+                <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1}/>
@@ -108,53 +159,9 @@ const AdminOverview = () => {
               </ResponsiveContainer>
             </div>
           </Card>
-
-          <Card className="border-none shadow-sm rounded-3xl p-6">
-            <CardHeader className="px-0 pt-0">
-              <CardTitle className="text-lg font-bold">New User Registrations</CardTitle>
-            </CardHeader>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                  <Tooltip 
-                    contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
-                  />
-                  <Line type="monotone" dataKey="users" stroke="#f43f5e" strokeWidth={3} dot={{r: 4, fill: '#f43f5e', strokeWidth: 2, stroke: '#fff'}} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
         </div>
 
         <div className="space-y-8">
-          <Card className="border-none shadow-sm rounded-3xl bg-white">
-            <CardHeader>
-              <CardTitle className="text-lg font-bold">Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="divide-y divide-slate-50">
-                {recentActivity.map((activity) => (
-                  <div key={activity.id} className="p-4 hover:bg-slate-50 transition-colors">
-                    <div className="flex justify-between items-start mb-1">
-                      <p className="text-sm font-bold text-slate-900">{activity.user}</p>
-                      <span className="text-xs text-slate-400">{activity.time}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <p className="text-xs text-slate-500">{activity.action}</p>
-                      <p className="text-xs font-bold text-indigo-600">{activity.amount}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="p-4 border-t border-slate-50">
-                <Button variant="ghost" className="w-full text-indigo-600 text-sm font-bold">View All Activity</Button>
-              </div>
-            </CardContent>
-          </Card>
-
           <Card className="border-none shadow-sm rounded-3xl bg-indigo-600 text-white">
             <CardContent className="p-6">
               <h3 className="text-lg font-bold mb-2">System Health</h3>

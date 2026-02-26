@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Share2, 
   Copy, 
@@ -9,14 +9,30 @@ import {
   FileText, 
   Video,
   ExternalLink,
-  CheckCircle2
+  CheckCircle2,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { showSuccess } from '@/utils/toast';
+import { supabase } from '@/lib/supabase';
 
 const MarketingTools = () => {
-  const referralLink = `${window.location.origin}/register?ref=USER_ID_123`;
+  const [userId, setUserId] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+      }
+      setLoading(false);
+    };
+    getUser();
+  }, []);
+
+  const referralLink = `${window.location.origin}/register?ref=${userId}`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(referralLink);
@@ -29,6 +45,14 @@ const MarketingTools = () => {
     { title: "Platform Walkthrough", type: "MP4", size: "24.5 MB", icon: <Video className="text-amber-600" /> },
     { title: "Compensation Plan", type: "PDF", size: "1.5 MB", icon: <FileText className="text-indigo-600" /> },
   ];
+
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
@@ -57,7 +81,6 @@ const MarketingTools = () => {
               </div>
             </div>
             <div className="w-48 h-48 bg-white p-4 rounded-3xl shadow-2xl flex items-center justify-center">
-              {/* Placeholder for QR Code */}
               <div className="w-full h-full bg-gray-50 rounded-2xl flex flex-col items-center justify-center text-gray-400">
                 <Share2 size={48} className="mb-2" />
                 <span className="text-[10px] font-bold uppercase">Scan to Join</span>
