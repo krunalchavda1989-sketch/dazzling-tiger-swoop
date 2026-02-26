@@ -10,10 +10,14 @@ import {
   Loader2,
   Trophy,
   BookOpen,
-  ChevronRight
+  ChevronRight,
+  UserPlus,
+  ArrowRight,
+  ShoppingBag
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 
@@ -76,11 +80,18 @@ const DashboardOverview = () => {
           <h1 className="text-2xl font-bold text-gray-900">Business Overview</h1>
           <p className="text-gray-500">Track your growth and earnings in real-time.</p>
         </div>
-        <Button asChild className="bg-indigo-600 hover:bg-indigo-700 rounded-xl h-11">
-          <Link to="/dashboard/training">
-            <BookOpen className="mr-2 w-4 h-4" /> Training Academy
-          </Link>
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button asChild variant="outline" className="rounded-xl h-11 border-gray-200">
+            <Link to="/dashboard/marketing">
+              <UserPlus className="mr-2 w-4 h-4" /> Invite Friend
+            </Link>
+          </Button>
+          <Button asChild className="bg-indigo-600 hover:bg-indigo-700 rounded-xl h-11">
+            <Link to="/dashboard/training">
+              <BookOpen className="mr-2 w-4 h-4" /> Training Academy
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -107,47 +118,143 @@ const DashboardOverview = () => {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
-        {/* Recent Activity */}
-        <Card className="lg:col-span-2 border-none shadow-sm rounded-3xl">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg font-bold">Recent Commissions</CardTitle>
-            <Button variant="ghost" size="sm" className="text-indigo-600">View All</Button>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {data.commissions.length > 0 ? (
-                data.commissions.map((comm: any) => (
-                  <div key={comm.id} className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold">
-                        {comm.from_user.first_name[0]}{comm.from_user.last_name[0]}
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {comm.from_user.first_name} {comm.from_user.last_name}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Level {comm.level} {comm.type} • {format(new Date(comm.created_at), 'MMM d, h:mm a')}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold text-emerald-600">+₹{comm.amount.toFixed(2)}</p>
-                      <p className="text-xs text-gray-400 capitalize">{comm.status}</p>
-                    </div>
+        <div className="lg:col-span-2 space-y-8">
+          {/* Rank Progression */}
+          <Card className="border-none shadow-sm rounded-[2.5rem] bg-white overflow-hidden">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <Award className="text-indigo-600" size={20} />
+                Rank Progression
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-8 pt-0">
+              <div className="flex flex-col md:flex-row items-center gap-8">
+                <div className="relative w-32 h-32 flex items-center justify-center">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle
+                      cx="64"
+                      cy="64"
+                      r="58"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      fill="transparent"
+                      className="text-gray-100"
+                    />
+                    <circle
+                      cx="64"
+                      cy="64"
+                      r="58"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      fill="transparent"
+                      strokeDasharray={364.4}
+                      strokeDashoffset={364.4 * (1 - 0.65)}
+                      className="text-indigo-600"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-2xl font-bold text-gray-900">65%</span>
+                    <span className="text-[10px] text-gray-400 font-bold uppercase">To Silver</span>
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-10 text-gray-500">
-                  No commissions earned yet. Start referring to earn!
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                <div className="flex-1 space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Direct Referrals</span>
+                      <span className="font-bold text-gray-900">{data.directCount} / 3</span>
+                    </div>
+                    <Progress value={(data.directCount / 3) * 100} className="h-2 rounded-full" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Team Sales Volume</span>
+                      <span className="font-bold text-gray-900">₹12,400 / ₹25,000</span>
+                    </div>
+                    <Progress value={49.6} className="h-2 rounded-full" />
+                  </div>
+                  <p className="text-xs text-gray-400 italic">
+                    * Reach Silver rank to unlock Level 2-5 commissions and a 2% bonus on all sales.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Leaderboard */}
-        <div className="space-y-6">
+          {/* Recent Activity */}
+          <Card className="border-none shadow-sm rounded-3xl">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-lg font-bold">Recent Commissions</CardTitle>
+              <Button asChild variant="ghost" size="sm" className="text-indigo-600">
+                <Link to="/dashboard/wallet">View All</Link>
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {data.commissions.length > 0 ? (
+                  data.commissions.map((comm: any) => (
+                    <div key={comm.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold">
+                          {comm.from_user.first_name[0]}{comm.from_user.last_name[0]}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">
+                            {comm.from_user.first_name} {comm.from_user.last_name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Level {comm.level} {comm.type} • {format(new Date(comm.created_at), 'MMM d, h:mm a')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-emerald-600">+₹{comm.amount.toFixed(2)}</p>
+                        <p className="text-xs text-gray-400 capitalize">{comm.status}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-10 text-gray-500">
+                    No commissions earned yet. Start referring to earn!
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Sidebar Content */}
+        <div className="space-y-8">
+          {/* Quick Actions */}
+          <Card className="border-none shadow-sm rounded-3xl bg-white p-6">
+            <CardHeader className="px-0 pt-0">
+              <CardTitle className="text-lg font-bold">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="px-0 pb-0 space-y-3">
+              <Button asChild variant="outline" className="w-full justify-between h-12 rounded-xl border-gray-100 hover:bg-indigo-50 hover:text-indigo-600 group">
+                <Link to="/dashboard/marketing" className="flex items-center">
+                  <UserPlus size={18} className="mr-3 text-gray-400 group-hover:text-indigo-600" />
+                  Invite New Member
+                </Link>
+                <ArrowRight size={16} className="text-gray-300 group-hover:text-indigo-600" />
+              </Button>
+              <Button asChild variant="outline" className="w-full justify-between h-12 rounded-xl border-gray-100 hover:bg-indigo-50 hover:text-indigo-600 group">
+                <Link to="/dashboard/wallet" className="flex items-center">
+                  <Wallet size={18} className="mr-3 text-gray-400 group-hover:text-indigo-600" />
+                  Withdraw Earnings
+                </Link>
+                <ArrowRight size={16} className="text-gray-300 group-hover:text-indigo-600" />
+              </Button>
+              <Button asChild variant="outline" className="w-full justify-between h-12 rounded-xl border-gray-100 hover:bg-indigo-50 hover:text-indigo-600 group">
+                <Link to="/shop" className="flex items-center">
+                  <ShoppingBag size={18} className="mr-3 text-gray-400 group-hover:text-indigo-600" />
+                  Shop Marketplace
+                </Link>
+                <ArrowRight size={16} className="text-gray-300 group-hover:text-indigo-600" />
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Leaderboard */}
           <Card className="border-none shadow-sm rounded-3xl bg-white">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-bold flex items-center gap-2">
@@ -174,16 +281,6 @@ const DashboardOverview = () => {
               ))}
               <Button variant="outline" className="w-full rounded-xl border-gray-100 text-gray-500 h-10 text-xs font-bold">
                 View Full Leaderboard <ChevronRight size={14} className="ml-1" />
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-sm rounded-3xl bg-indigo-600 text-white">
-            <CardContent className="p-6">
-              <h3 className="text-lg font-bold mb-2">Refer & Earn</h3>
-              <p className="text-indigo-100 text-sm mb-6">Share your referral link and earn up to 9 levels deep.</p>
-              <Button className="w-full bg-white text-indigo-600 hover:bg-indigo-50 rounded-xl font-bold">
-                Invite Friends
               </Button>
             </CardContent>
           </Card>

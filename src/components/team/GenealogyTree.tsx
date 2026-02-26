@@ -1,17 +1,19 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { User, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
+import { User, ChevronDown, ChevronRight, Loader2, Users, Award } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { mlmService } from '@/services/mlmService';
 import { supabase } from '@/lib/supabase';
+import { Badge } from "@/components/ui/badge";
 
 interface TreeNodeProps {
   id: string;
   name: string;
   role: string;
   level: number;
-  hasChildren?: boolean;
+  status: string;
+  downlineCount?: number;
 }
 
 const TreeNode = ({ node, depth = 0 }: { node: TreeNodeProps; depth?: number }) => {
@@ -28,7 +30,9 @@ const TreeNode = ({ node, depth = 0 }: { node: TreeNodeProps; depth?: number }) 
           id: child.id,
           name: `${child.first_name} ${child.last_name}`,
           role: child.role,
-          level: depth + 1
+          level: depth + 1,
+          status: child.subscription_status,
+          downlineCount: 0 // In a real app, this would be fetched
         }));
         setChildren(mappedChildren);
       } catch (error) {
@@ -46,21 +50,34 @@ const TreeNode = ({ node, depth = 0 }: { node: TreeNodeProps; depth?: number }) 
       
       <div 
         className={cn(
-          "flex items-center gap-3 p-3 rounded-2xl transition-all cursor-pointer group",
-          isOpen ? "bg-indigo-50/50" : "hover:bg-gray-50"
+          "flex items-center gap-4 p-4 rounded-[1.5rem] transition-all cursor-pointer group border border-transparent",
+          isOpen ? "bg-indigo-50/50 border-indigo-100" : "hover:bg-gray-50 hover:border-gray-100"
         )}
         onClick={toggleOpen}
       >
         <div className={cn(
-          "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm",
+          "w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold shadow-sm relative",
           depth === 0 ? "bg-indigo-600" : "bg-indigo-400"
         )}>
           {node.name[0]}
+          <div className={cn(
+            "absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white",
+            node.status === 'active' ? "bg-emerald-500" : "bg-gray-300"
+          )}></div>
         </div>
         
         <div className="flex-1">
-          <h4 className="text-sm font-bold text-gray-900">{node.name}</h4>
-          <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">{node.role} • Level {depth}</p>
+          <div className="flex items-center gap-2">
+            <h4 className="text-sm font-bold text-gray-900">{node.name}</h4>
+            {depth === 0 && <Badge className="bg-indigo-100 text-indigo-600 border-none text-[10px] h-5">You</Badge>}
+          </div>
+          <div className="flex items-center gap-3 mt-1">
+            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">{node.role} • Level {depth}</p>
+            <div className="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
+              <Users size={10} />
+              <span>{node.downlineCount || 0} Team</span>
+            </div>
+          </div>
         </div>
 
         <div className="text-gray-400 group-hover:text-indigo-600 transition-colors">
@@ -81,7 +98,10 @@ const TreeNode = ({ node, depth = 0 }: { node: TreeNodeProps; depth?: number }) 
       )}
       
       {isOpen && children.length === 0 && !isLoading && (
-        <p className="ml-10 text-xs text-gray-400 py-2 italic">No downline members found.</p>
+        <p className="ml-12 text-xs text-gray-400 py-3 italic flex items-center gap-2">
+          <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+          No downline members found.
+        </p>
       )}
     </div>
   );
@@ -97,16 +117,18 @@ const GenealogyTree = () => {
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name, role')
+          .select('id, first_name, last_name, role, subscription_status')
           .eq('id', user.id)
           .single();
         
         if (profile) {
           setRootUser({
             id: profile.id,
-            name: `You (${profile.first_name} ${profile.last_name})`,
+            name: `${profile.first_name} ${profile.last_name}`,
             role: profile.role,
-            level: 0
+            level: 0,
+            status: profile.subscription_status,
+            downlineCount: 0 // In a real app, this would be fetched
           });
         }
       }
@@ -128,12 +150,24 @@ const GenealogyTree = () => {
 
   return (
     <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
-      <div className="mb-8">
-        <h3 className="text-xl font-bold text-gray-900">Genealogy Tree</h3>
-        <p className="text-sm text-gray-500">Visualize your downline organization up to 9 levels.</p>
+      <div className="mb-10 flex items-center justify-between">
+        <div>
+          <h3 className="text-xl font-bold text-gray-900">Genealogy Tree</h3>
+          <p className="text-sm text-gray-500">Visualize your 9-level organization structure.</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+            <span className="text-xs font-medium text-gray-600">Active</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-gray-300"></div>
+            <span className="text-xs font-medium text-gray-600">Inactive</span>
+          </div>
+        </div>
       </div>
       
-      <div className="max-w-2xl">
+      <div className="max-w-3xl">
         <TreeNode node={rootUser} depth={0} />
       </div>
     </div>

@@ -10,7 +10,8 @@ import {
   ArrowDownRight,
   Activity,
   Clock,
-  Loader2
+  Loader2,
+  PieChart as PieChartIcon
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,10 @@ import {
   Tooltip, 
   ResponsiveContainer,
   AreaChart,
-  Area
+  Area,
+  PieChart,
+  Pie,
+  Cell
 } from 'recharts';
 import { supabase } from '@/lib/supabase';
 
@@ -83,6 +87,13 @@ const AdminOverview = () => {
     { name: 'Fri', sales: 4800 },
     { name: 'Sat', sales: 3800 },
     { name: 'Sun', sales: 4300 },
+  ];
+
+  const categoryData = [
+    { name: 'Wellness', value: 45, color: '#6366f1' },
+    { name: 'Nutrition', value: 30, color: '#818cf8' },
+    { name: 'Personal Care', value: 15, color: '#a5b4fc' },
+    { name: 'Health', value: 10, color: '#c7d2fe' },
   ];
 
   if (loading) {
@@ -162,6 +173,48 @@ const AdminOverview = () => {
         </div>
 
         <div className="space-y-8">
+          <Card className="border-none shadow-sm rounded-3xl p-6">
+            <CardHeader className="px-0 pt-0">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <PieChartIcon className="text-indigo-600" size={20} />
+                Sales by Category
+              </CardTitle>
+            </CardHeader>
+            <div className="h-[240px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={categoryData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {categoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-4 space-y-2">
+              {categoryData.map((cat, i) => (
+                <div key={i} className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{backgroundColor: cat.color}}></div>
+                    <span className="text-slate-500 font-medium">{cat.name}</span>
+                  </div>
+                  <span className="font-bold text-slate-900">{cat.value}%</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+
           <Card className="border-none shadow-sm rounded-3xl bg-indigo-600 text-white">
             <CardContent className="p-6">
               <h3 className="text-lg font-bold mb-2">System Health</h3>
