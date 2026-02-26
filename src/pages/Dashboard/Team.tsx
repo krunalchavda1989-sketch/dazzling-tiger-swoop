@@ -34,6 +34,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
+import { format } from 'date-fns';
 
 const TeamView = () => {
   const [loading, setLoading] = useState(true);
@@ -57,13 +58,11 @@ const TeamView = () => {
       .select('*')
       .eq('referrer_id', user.id);
 
-    // Fetch All Downline (Simplified for now, showing direct and their direct)
-    // In a real app, this would be a recursive query or a flattened tree table
     setTeamMembers(directs || []);
     setStats({
-      total: directs?.length || 0, // This should be total recursive count
+      total: directs?.length || 0,
       direct: directs?.length || 0,
-      levels: 1 // This should be max depth
+      levels: 1
     });
     setLoading(false);
   }
@@ -284,8 +283,8 @@ const TeamView = () => {
                   </tbody>
                 </table>
               </div>
-            </TabsContent>
-          </Tabs>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="tree" className="m-0">
