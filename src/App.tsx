@@ -29,6 +29,7 @@ import Settings from "./pages/Dashboard/Settings";
 import UserOrders from "./pages/Dashboard/Orders";
 import Support from "./pages/Dashboard/Support";
 import MarketingTools from "./pages/Dashboard/Marketing";
+import TrainingAcademy from "./pages/Dashboard/Training";
 
 // Admin Pages
 import AdminLayout from "./components/layout/AdminLayout";
@@ -58,7 +59,7 @@ const App = () => (
             <Route path="/shop" element={<Shop />} />
             <Route path="/shop/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/shop/checkout" element={<Checkout />} />
 
             {/* User Dashboard Routes */}
             <Route path="/dashboard" element={
@@ -71,6 +72,7 @@ const App = () => (
               <Route path="wallet" element={<WalletView />} />
               <Route path="orders" element={<UserOrders />} />
               <Route path="marketing" element={<MarketingTools />} />
+              <Route path="training" element={<TrainingAcademy />} />
               <Route path="support" element={<Support />} />
               <Route path="settings" element={<Settings />} />
             </Route>
