@@ -1,13 +1,69 @@
-import React from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TrendingUp, ArrowLeft, UserPlus } from 'lucide-react';
+import { UserPlus, ArrowLeft, Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { showSuccess, showError } from '@/utils/toast';
 
 const Register = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const referralId = searchParams.get('ref') || '';
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    referralCode: referralId
+  });
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      // 1. Sign up the user with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+          }
+        }
+      });
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        // 2. Create the profile with referral info
+        // Note: In a real app, this would be handled by a Supabase trigger or a more secure edge function
+        const { error: profileError } = await supabase.from('profiles').insert({
+          id: authData.user.id,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          email: formData.email,
+          referrer_id: formData.referralCode || null,
+          subscription_status: 'pending',
+          role: 'distributor'
+        });
+
+        if (profileError) throw profileError;
+
+        showSuccess("Account created! Please complete your subscription payment.");
+        navigate('/checkout?type=subscription');
+      }
+    } catch (error: any) {
+      showError(error.message || "Registration failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
@@ -24,14 +80,16 @@ const Register = () => {
           <h2 className="text-3xl font-bold text-gray-900">Join NexGen</h2>
           <p className="mt-2 text-gray-600">Start your journey for just ₹2800</p>
         </div>
-        <form className="mt-8 space-y-6">
+        
+        <form className="mt-8 space-y-6" onSubmit={handleRegister}>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="referral">Referral ID (Optional)</Label>
               <Input 
                 id="referral" 
                 type="text" 
-                defaultValue={referralId}
+                value={formData.referralCode}
+                onChange={(e) => setFormData({...formData, referralCode: e.target.value})}
                 placeholder="Enter referral code" 
                 className="h-12 rounded-xl border-gray-200 bg-gray-50 focus:ring-indigo-500" 
               />
@@ -39,20 +97,52 @@ const Register = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" type="text" placeholder="John" className="h-12 rounded-xl border-gray-200 focus:ring-indigo-500" required />
+                <Input 
+                  id="firstName" 
+                  type="text" 
+                  required
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                  placeholder="John" 
+                  className="h-12 rounded-xl border-gray-200 focus:ring-indigo-500" 
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" type="text" placeholder="Doe" className="h-12 rounded-xl border-gray-200 focus:ring-indigo-500" required />
+                <Input 
+                  id="lastName" 
+                  type="text" 
+                  required
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                  placeholder="Doe" 
+                  className="h-12 rounded-xl border-gray-200 focus:ring-indigo-500" 
+                />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email address</Label>
-              <Input id="email" type="email" placeholder="name@example.com" className="h-12 rounded-xl border-gray-200 focus:ring-indigo-500" required />
+              <Input 
+                id="email" 
+                type="email" 
+                required
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                placeholder="name@example.com" 
+                className="h-12 rounded-xl border-gray-200 focus:ring-indigo-500" 
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" placeholder="••••••••" className="h-12 rounded-xl border-gray-200 focus:ring-indigo-500" required />
+              <Input 
+                id="password" 
+                type="password" 
+                required
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                placeholder="••••••••" 
+                className="h-12 rounded-xl border-gray-200 focus:ring-indigo-500" 
+              />
             </div>
           </div>
 
@@ -63,8 +153,12 @@ const Register = () => {
             </div>
           </div>
 
-          <Button type="submit" className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-lg font-semibold">
-            Pay & Register
+          <Button 
+            type="submit" 
+            disabled={isLoading}
+            className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-lg font-semibold"
+          >
+            {isLoading ? <Loader2 className="animate-spin" /> : "Pay & Register"}
           </Button>
 
           <p className="text-center text-sm text-gray-600">
