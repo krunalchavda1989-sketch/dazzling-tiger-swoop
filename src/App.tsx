@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 // Shop Pages
 import Shop from "./pages/Shop/Shop";
@@ -60,7 +61,11 @@ const App = () => (
             <Route path="/checkout" element={<Checkout />} />
 
             {/* User Dashboard Routes */}
-            <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }>
               <Route index element={<DashboardOverview />} />
               <Route path="team" element={<TeamView />} />
               <Route path="wallet" element={<WalletView />} />
@@ -71,7 +76,11 @@ const App = () => (
             </Route>
 
             {/* Admin Routes */}
-            <Route path="/admin" element={<AdminLayout />}>
+            <Route path="/admin" element={
+              <ProtectedRoute requireAdmin>
+                <AdminLayout />
+              </ProtectedRoute>
+            }>
               <Route index element={<AdminOverview />} />
               <Route path="users" element={<UserManagement />} />
               <Route path="products" element={<ProductManagement />} />

@@ -6,7 +6,6 @@ const REPURCHASE_COMMISSIONS = [0.03, 0.02, 0.01];
 export const mlmService = {
   /**
    * Calculates and distributes referral commissions up to 9 levels.
-   * Subscription fee is ₹2800.
    */
   async distributeReferralCommission(newUserId: string, referrerId: string) {
     const subscriptionFee = 2800;
@@ -15,14 +14,12 @@ export const mlmService = {
     for (let level = 1; level <= 9; level++) {
       if (!currentReferrerId) break;
 
-      // 1. Check if referrer is qualified for this level
       const isQualified = await this.checkLevelQualification(currentReferrerId, level);
       
       if (isQualified) {
         const commissionRate = REFERRAL_COMMISSIONS[level - 1];
         const amount = subscriptionFee * commissionRate;
 
-        // 2. Record commission
         await supabase.from('commissions').insert({
           user_id: currentReferrerId,
           from_user_id: newUserId,
@@ -32,14 +29,12 @@ export const mlmService = {
           status: 'pending'
         });
 
-        // 3. Update wallet (simplified)
         await supabase.rpc('increment_wallet_balance', { 
           user_id: currentReferrerId, 
           amount 
         });
       }
 
-      // Move up the tree
       const { data: parent } = await supabase
         .from('profiles')
         .select('referrer_id')
@@ -50,9 +45,6 @@ export const mlmService = {
     }
   },
 
-  /**
-   * Checks if a user meets the criteria for a specific level.
-   */
   async checkLevelQualification(userId: string, level: number): Promise<boolean> {
     const { count } = await supabase
       .from('profiles')
@@ -68,9 +60,6 @@ export const mlmService = {
     return false;
   },
 
-  /**
-   * Distributes repurchase commissions up to 3 levels.
-   */
   async distributeRepurchaseCommission(orderId: string, userId: string, orderTotal: number) {
     let currentReferrerId = await this.getReferrerId(userId);
 
@@ -100,5 +89,18 @@ export const mlmService = {
       .eq('id', userId)
       .single();
     return data?.referrer_id || null;
+  },
+
+  /**
+   * Fetches the downline for a specific user.
+   */
+  async getDownline(userId: string) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, first_name, last_name, role, referrer_id, subscription_status')
+      .eq('referrer_id', userId);
+    
+    if (error) throw error;
+    return data;
   }
 };
