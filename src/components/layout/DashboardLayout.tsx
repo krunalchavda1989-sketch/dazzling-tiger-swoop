@@ -1,5 +1,3 @@
-"use client";
-
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
@@ -7,13 +5,14 @@ import {
   Users, 
   Wallet, 
   ShoppingBag, 
-  Settings as SettingsIcon, 
+  Settings, 
   LogOut,
   Bell,
   Menu,
   X
 } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/avatar";
 
 const DashboardLayout = () => {
   const location = useLocation();
@@ -24,7 +23,7 @@ const DashboardLayout = () => {
     { icon: <Users size={20} />, label: 'My Team', path: '/dashboard/team' },
     { icon: <Wallet size={20} />, label: 'Wallet', path: '/dashboard/wallet' },
     { icon: <ShoppingBag size={20} />, label: 'Shop', path: '/shop' },
-    { icon: <SettingsIcon size={20} />, label: 'Settings', path: '/dashboard/settings' },
+    { icon: <Settings size={20} />, label: 'Settings', path: '/dashboard/settings' },
   ];
 
   return (
@@ -48,7 +47,6 @@ const DashboardLayout = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                onClick={() => setIsMobileMenuOpen(false)}
                 className={`
                   flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors
                   ${location.pathname === item.path 
