@@ -9,7 +9,6 @@ import {
   BarChart3, 
   Settings, 
   LogOut,
-  Bell,
   Menu,
   X,
   Search,
@@ -18,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
+import NotificationDropdown from './NotificationDropdown';
 
 const AdminLayout = () => {
   const location = useLocation();
@@ -94,10 +94,7 @@ const AdminLayout = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <button className="p-2 text-slate-400 hover:text-slate-600 relative">
-              <Bell size={20} />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full border-2 border-white"></span>
-            </button>
+            <NotificationDropdown />
             <div className="h-8 w-px bg-slate-200 mx-2"></div>
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
